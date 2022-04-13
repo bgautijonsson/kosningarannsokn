@@ -56,7 +56,15 @@ preprocess_data_attrition <- function(doi, filename, year) {
                                "Voted, refuses to say for what party",
                                "Other party, what party",
                                "Refuses to answer (volunteered)",
-                               "Don’t know (volunteered)")) |> 
+                               "Don’t know (volunteered)",
+                               "Voted, does not want to say which party",
+                               "Cast a blank ballot",
+                               "Cast an invalid vote",
+                               "Missing",
+                               "Voted, doesn‘t want to say for what party",
+                               "Another party or party list, which?",
+                               "Refuses to answer")) |> 
+        drop_na(current) |> 
         group_by(current, former) |> 
         summarise(n = n(),
                   age = mean(age),
@@ -67,6 +75,27 @@ preprocess_data_attrition <- function(doi, filename, year) {
                cum_p = cumsum(p)) |> 
         ungroup() |> 
         mutate(year = year)
+}
+
+translate_parties <- function(name) {
+    parties <- c(
+        "Independence Party" = "Sjálfstæðisflokkurinn",
+        "Progressive Party" = "Framsóknarflokkurinn",
+        "Social Democratic Alliance" = "Samfylkingin",
+        "Left Green Movement" = "Vinstri Græn",
+        "Pirate Party" = "Píratar",
+        "Reform Party" = "Viðreisn",
+        "Centre Party" = "Miðflokkurinn",
+        "Bright Future" = "Björt Framtíð",
+        "Peoples party" = "Flokkur Fólksins",
+        "Civic Movement" = "Borgarahreyfingin",
+        "Dawn" = "Dögun",
+        "Liberal Party" = "Frjálslyndi flokkurinn",
+        "Cast a blank or invalid ballot" = "Skilaði auðu",
+        "95" = "Nýr kjósandi"
+    )
+    
+    ifelse(name %in% names(parties), parties[name], name)
 }
 ```
 
@@ -90,60 +119,12 @@ year <- c(2017,
           2007,
           2003)
 
-translate_parties <- function(name) {
-    parties <- c(
-        "Independence Party" = "Sjálfstæðisflokkurinn",
-        "Progressive Party" = "Framsóknarflokkurinn",
-        "Social Democratic Alliance" = "Samfylkingin",
-        "Left Green Movement" = "Vinstri Græn",
-        "Pirate Party" = "Píratar",
-        "Reform Party" = "Viðreisn",
-        "Centre Party" = "Miðflokkurinn",
-        "Bright Future" = "Björt Framtíð",
-        "Peoples party" = "Flokkur Fólksins",
-        "Civic Movement" = "Borgarahreyfingin",
-        "Dawn" = "Dögun",
-        "Liberal Party" = "Frjálslyndi flokkurinn"
-    )
-    
-    ifelse(name %in% names(parties), parties[name], name)
-}
-
 d_retention <- pmap(list(doi = doi, filename = filename, year = year), preprocess_data_attrition) |> 
     reduce(bind_rows) |> 
     mutate_at(vars(current, former), as.character) |> 
     mutate_at(vars(current, former), translate_parties)
 ```
 
-
-### Þýða nöfn flokkanna
-
-```{r}
-translate_parties <- function(name) {
-    parties <- c(
-        "Independence Party" = "Sjálfstæðisflokkurinn",
-        "Progressive Party" = "Framsóknarflokkurinn",
-        "Social Democratic Alliance" = "Samfylkingin",
-        "Left Green Movement" = "Vinstri Græn",
-        "Pirate Party" = "Píratar",
-        "Reform Party" = "Viðreisn",
-        "Centre Party" = "Miðflokkurinn",
-        "Bright Future" = "Björt Framtíð",
-        "Peoples party" = "Flokkur Fólksins",
-        "Civic Movement" = "Borgarahreyfingin",
-        "Dawn" = "Dögun",
-        "Liberal Party" = "Frjálslyndi flokkurinn",
-        "Cast a blank or invalid ballot" = "Skilaði auðu",
-        "95" = "Nýr kjósandi"
-    )
-    
-    ifelse(name %in% names(parties), parties[name], name)
-}
-
-d_retention <- d_retention |> 
-    mutate_at(vars(current, former), as.character) |> 
-    mutate_at(vars(current, former), translate_parties)
-```
 
 ### Litir flokkanna
 
@@ -402,7 +383,7 @@ p <- d_retention |>
     labs(x = NULL,
          y = NULL,
          fill = NULL,
-         title = "Hvert missir Vinstri Græn kjósendur sína?",
+         title = "Hvert missa Vinstri Græn kjósendur sína?",
          caption = "Kóði og gögn: https://github.com/bgautijonsson/kosningarannsokn")
 
 p
@@ -431,7 +412,15 @@ preprocess_data_recruitment <- function(doi, filename, year) {
                                "Voted, refuses to say for what party",
                                "Other party, what party",
                                "Refuses to answer (volunteered)",
-                               "Don’t know (volunteered)")) |> 
+                               "Don’t know (volunteered)",
+                               "Voted, does not want to say which party",
+                               "Cast a blank ballot",
+                               "Cast an invalid vote",
+                               "Missing",
+                               "Voted, doesn‘t want to say for what party",
+                               "Another party or party list, which?",
+                               "Refuses to answer")) |> 
+        drop_na(former) |> 
         group_by(current, former) |> 
         summarise(n = n(),
                   age = mean(age),
@@ -466,16 +455,7 @@ translate_parties <- function(name) {
 d_recruitment <- pmap(list(doi = doi, filename = filename, year = year), preprocess_data_recruitment) |> 
     reduce(bind_rows) |> 
     mutate_at(vars(current, former), as.character) |> 
-    mutate_at(vars(current, former), translate_parties) |> 
-    filter(!former %in% c("No, did not vote",
-                          "Not applicable",
-                          "Don‘t remember what I voted",
-                          "Nýr kjósandi",
-                          "Skilaði auðu",
-                          "Voted, refuses to say for what party",
-                          "Other party, what party",
-                          "Refuses to answer (volunteered)",
-                          "Don’t know (volunteered)"))
+    mutate_at(vars(current, former), translate_parties)
 ```
 
 ## Nýliðun frá öðrum flokkum
@@ -569,9 +549,9 @@ p <- d_recruitment |>
     scale_y_continuous(labels = label_percent()) +
     scale_fill_manual(values = c(Annad,
                                  xC,
-                                 xB,
                                  xP,
                                  xBF,
+                                 xB,
                                  xD,
                                  xV,
                                  xS)) +
@@ -581,7 +561,7 @@ p <- d_recruitment |>
     labs(x = NULL,
          y = NULL,
          fill = NULL,
-         title = "Hvaðan sækir Samfylkingin kjósendur sína?",
+         title = "Hvert sækir Samfylkingin kjósendur sína?",
          caption = "Kóði og gögn: https://github.com/bgautijonsson/kosningarannsokn")
 
 p
@@ -627,7 +607,7 @@ p <- d_recruitment |>
     labs(x = NULL,
          y = NULL,
          fill = NULL,
-         title = "Hvaðan sækir Sjálfstæðisflokkurinn kjósendur sína?",
+         title = "Hvert sækir Sjálfstæðisflokkurinn kjósendur sína?",
          caption = "Kóði og gögn: https://github.com/bgautijonsson/kosningarannsokn")
 
 p
@@ -673,7 +653,7 @@ p <- d_recruitment |>
     labs(x = NULL,
          y = NULL,
          fill = NULL,
-         title = "Hvaðan sækir Framsóknarflokurinn kjósendur sína?",
+         title = "Hvert sækir Framsóknarflokurinn kjósendur sína?",
          caption = "Kóði og gögn: https://github.com/bgautijonsson/kosningarannsokn")
 
 p
@@ -765,7 +745,7 @@ p <- d_recruitment |>
     labs(x = NULL,
          y = NULL,
          fill = NULL,
-         title = "Hvaðan sækir Viðreisn kjósendur sína?",
+         title = "Hvert sækir Viðreisn kjósendur sína?",
          caption = "Kóði og gögn: https://github.com/bgautijonsson/kosningarannsokn")
 
 p
@@ -856,7 +836,7 @@ p <- d_recruitment |>
     labs(x = NULL,
          y = NULL,
          fill = NULL,
-         title = "Hvaðan sækir Miðflokkurinn kjósendur sína?",
+         title = "Hvert sækir Miðflokkurinn kjósendur sína?",
          caption = "Kóði og gögn: https://github.com/bgautijonsson/kosningarannsokn")
 
 p
