@@ -1,6 +1,6 @@
 # kosningarannsokn
 
-Þessi úrvinnsla byggir á Íslensku Kosningarannsókninni sem er framkvæmd af Félagsvísindastofnun Háskóla Íslands eftir alþingiskosninar.
+Þessi úrvinnsla byggir á Íslensku Kosningarannsókninni sem er framkvæmd af Félagsvísindastofnun Háskóla Íslands eftir alþingiskosninar. [Notendaskilmálar GAGNÍS](https://fel.hi.is/is/notendaskilmalar-gagnis).
 
 Glöggt áhugafólk hefur kannski séð að það er .qmd skrá en ekki .rmd skrá hérna. Það er því ég er farinn að nota [Quarto](https://quarto.org), sem verður arftaki rmarkdown og knitr. Ég mæli eindregið með að þið kynnið ykkur Quarto, því eitt markmið þess er að virka vel fyrir fleiri forritunarmál en R.
 
@@ -34,3 +34,5 @@ Harðarson, Ólafur Þórður; Eva Heiða Önnudóttir; Einar Már Þórðarson;
 **2003**
 
 Harðarson, Ólafur Þórður; Eva Heiða Önnudóttir; Einar Mar Þórðarson; Félagsvísindastofnun, 2021, "Íslenska kosningarannsóknin 2003", https://doi.org/10.34881/1.00006, GAGNÍS (DATICE), V1, UNF:6:2wWd5vKJmBmyz2NzoDiPQQ== [fileUNF]
+
+
